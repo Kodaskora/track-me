@@ -7,8 +7,10 @@ const authReducer = (state, action) => {
   switch (action.type) {
     case 'add_error':
       return { ...state, errorMessage: action.payload };
-    case 'signup':
+    case 'signin':
       return { token: action.payload, errorMessage: '' };
+    case 'clear_error_message':
+      return { ...state, errorMessage: '' };
     default:
       return state;
   }
@@ -22,7 +24,7 @@ const signup =
       const response = await trackerApi.post('/signup', { email, password });
       await AsyncStorage.setItem('token', response.data.token);
       // if we sign up, modify our state, and say that we are authenticated
-      dispatch({ type: 'signup', payload: response.data.token });
+      dispatch({ type: 'signin', payload: response.data.token });
       // navigate to main flow
       navigate('TrackList');
     } catch (error) {
@@ -34,13 +36,35 @@ const signup =
     }
   };
 
-const signin = (dispatch) => {
-  return ({ email, password }) => {
-    // make api request to sign in with email and password
-    // if we sign in, modify our state, and say that we are authenticated
-    // if signing in fails, we probably need to reflect an error message somewhere
-  };
+const clearErrorMessage = (dispatch) => () => {
+  dispatch({ type: 'clear_error_message' });
 };
+
+const tryLocalSignin = (dispatch) => async () => {
+  const token = await AsyncStorage.getItem('token');
+  if (token) {
+    dispatch({ type: 'signin', payload: token });
+    navigate('TrackList');
+  } else {
+    navigate('loginFlow');
+  }
+};
+
+const signin =
+  (dispatch) =>
+  async ({ email, password }) => {
+    try {
+      const response = await trackerApi.post('/signin', { email, password });
+      await AsyncStorage.setItem('token', response.data.token);
+      dispatch({ type: 'signin', payload: response.data.token });
+      navigate('TrackList');
+    } catch (error) {
+      dispatch({
+        type: 'add_error',
+        payload: 'Something went wrong with sign in',
+      });
+    }
+  };
 
 const signout = (dispatch) => {
   return () => {
@@ -50,6 +74,6 @@ const signout = (dispatch) => {
 
 export const { Context, Provider } = createDataContext(
   authReducer,
-  { signin, signout, signup },
+  { signin, signout, signup, clearErrorMessage, tryLocalSignin },
   { token: null, errorMessage: '' }
 );
