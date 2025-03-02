@@ -1,3 +1,10 @@
+import { Keyboard } from 'react-native';
+
+// Monkey patch: provide a no-op function for removeListener if it's not available.
+if (typeof Keyboard.removeListener !== 'function') {
+  Keyboard.removeListener = () => {};
+}
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';
