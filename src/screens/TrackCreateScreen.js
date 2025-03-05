@@ -9,6 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import useLocation from '../hooks/useLocation';
 import TrackForm from '../components/TrackForm';
 import Spacer from '../components/Spacer';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const TrackCreateScreen = ({ isFocused }) => {
   const {
@@ -36,6 +37,11 @@ const TrackCreateScreen = ({ isFocused }) => {
       </Spacer>
     </SafeAreaView>
   );
+};
+
+TrackCreateScreen.navigationOptions = {
+  title: 'Add Track',
+  tabBarIcon: <FontAwesome name='plus' size={24} color='black' />,
 };
 
 const styles = StyleSheet.create({});
